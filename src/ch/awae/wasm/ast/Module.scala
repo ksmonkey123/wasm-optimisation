@@ -1,6 +1,7 @@
 package ch.awae.wasm.ast
 
 import scala.annotation.tailrec
+import scala.reflect.ClassTag
 
 case class RawModule(sections: List[Section])
 
@@ -21,10 +22,13 @@ case object RawModule {
   }
 }
 
-case class Module(rawSections: List[Section], types: TypeSection, functions: List[WasmFunction])
+case class Module(rawSections: List[Section], types: TypeSection, functions: List[WasmFunction]) {
+  def raw[T <: Section](implicit ev: ClassTag[T]) = rawSections filter (ev unapply _ isDefined)
+}
 
 object Module {
   private[ast] def apply(stream: DataStream): Module = {
+
     @tailrec
     def scan(
       sections:  List[Section],
@@ -37,16 +41,16 @@ object Module {
         collect(remainder.reverse, types, funcs, codes, impos)
       else
         sections.head match {
-          case x: TypeSection     => scan(sections.tail, remainder, x, funcs, codes, impos)
-          case x: FunctionSection => scan(sections.tail, remainder, types, x, codes, impos)
-          case x: CodeSection     => scan(sections.tail, remainder, types, funcs, x, impos)
-          case x: ImportSection   => scan(sections.tail, remainder, types, funcs, codes, x)
-          case x                  => scan(sections.tail, x :: remainder, types, funcs, codes, impos)
+          case x: TypeSection                      => scan(sections.tail, remainder, x, funcs, codes, impos)
+          case x: FunctionSection                  => scan(sections.tail, remainder, types, x, codes, impos)
+          case x: CodeSection                      => scan(sections.tail, remainder, types, funcs, x, impos)
+          case x: ImportSection                    => scan(sections.tail, remainder, types, funcs, codes, x)
+          case x if !x.isInstanceOf[CustomSection] => scan(sections.tail, remainder, types, funcs, codes, impos)
+          case x                                   => scan(sections.tail, x :: remainder, types, funcs, codes, impos)
         }
     }
 
     def collect(remainder: List[Section], types: TypeSection, funcs: FunctionSection, codes: CodeSection, impos: ImportSection): Module = {
-
       val declaredFunctions =
         if (funcs != null)
           funcs.typeIndices zip codes.functions map {
