@@ -1,11 +1,10 @@
 package ch.awae.wasm
 
-import ch.awae.wasm.ast.Instruction
-import ch.awae.wasm.io.ListBackedDataStream
-import ch.awae.wasm.ast.Parser
+import ch.awae.wasm.io.implicits._
+import ch.awae.wasm.ast.implicits._
 
 object Main extends App {
 
-  println(Parser.parseFile("math.wasm"));
+  println("math.wasm".file.ast)
 
 }

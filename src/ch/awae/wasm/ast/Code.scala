@@ -1,15 +1,15 @@
 package ch.awae.wasm.ast
 
-case class Locals(count: I32, valType: ValueType)
+case class Locals(count: Int, valType: ValueType)
 object Locals {
-  def apply(stream: DataStream): Locals = Locals(I32(stream), ValueType(stream))
+  private[ast] def apply(stream: DataStream): Locals = Locals(I32(stream).unsigned, ValueType(stream))
 }
 
-case class Code(locals: Vec[Locals], body: Expression)
+case class Code(locals: List[Locals], body: Expression)
 object Code {
-  def apply(stream: DataStream): Code = {
+  private[ast] def apply(stream: DataStream): Code = {
     stream.take
-    Code(Vec(stream, Locals(_)), Expression(stream))
+    Code(Vec(stream, Locals(_)).toList, Expression(stream))
   }
 }
 

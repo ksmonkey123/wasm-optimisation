@@ -17,10 +17,10 @@ case class I64(bytes: List[Byte]) extends NumericValue
 case class F32(bytes: List[Byte]) extends NumericValue
 case class F64(bytes: List[Byte]) extends NumericValue
 
-object I32 { def apply(stream: DataStream): I32 = LSB128(stream, apply) }
-object I64 { def apply(stream: DataStream): I64 = LSB128(stream, apply) }
-object F32 { def apply(stream: DataStream): F32 = F32(stream take 4) }
-object F64 { def apply(stream: DataStream): F64 = F64(stream take 8) }
+object I32 { private[ast] def apply(stream: DataStream): I32 = LSB128(stream, apply) }
+object I64 { private[ast] def apply(stream: DataStream): I64 = LSB128(stream, apply) }
+object F32 { private[ast] def apply(stream: DataStream): F32 = F32(stream take 4) }
+object F64 { private[ast] def apply(stream: DataStream): F64 = F64(stream take 8) }
 
 private object LSB128 {
   @tailrec
@@ -28,5 +28,4 @@ private object LSB128 {
     case x if x < 0 => apply(stream, f, x :: acc)
     case x          => f((x :: acc).reverse)
   }
-
 }

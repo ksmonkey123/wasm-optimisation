@@ -22,10 +22,11 @@ sealed trait DataStream {
 }
 
 object DataStream {
-  def ofStream(s : InputStream):DataStream = new InputStreamDataStream(s)
+  def ofStream(s: InputStream): DataStream = new InputStreamDataStream(s)
+  def ofList(l: List[Byte]): DataStream = new ListBackedDataStream(l)
 }
 
-class CompositeDataStream(var list: List[Byte], val parent: DataStream) extends DataStream {
+private class CompositeDataStream(var list: List[Byte], val parent: DataStream) extends DataStream {
 
   override def ::(x: Byte): DataStream = {
     list = x :: list
@@ -49,7 +50,7 @@ class CompositeDataStream(var list: List[Byte], val parent: DataStream) extends 
 
 }
 
-class ListBackedDataStream(@volatile private[this] var list: List[Byte]) extends DataStream {
+private class ListBackedDataStream(private[this] var list: List[Byte]) extends DataStream {
   def take = {
     val next = list.head
     list = list.tail
@@ -57,7 +58,7 @@ class ListBackedDataStream(@volatile private[this] var list: List[Byte]) extends
   }
 }
 
-class InputStreamDataStream(stream: InputStream) extends DataStream {
+private class InputStreamDataStream(stream: InputStream) extends DataStream {
   def take = {
     try {
       val next = stream.read

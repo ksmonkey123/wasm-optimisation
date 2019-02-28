@@ -4,10 +4,11 @@ import java.io.BufferedInputStream
 import java.io.FileInputStream
 import scala.util.control.NonFatal
 import ch.awae.wasm.io.{ DataStream => DS }
+import java.io.File
 
 object Parser {
 
-  def parseFile(file: String) = {
+  def parseFile(file: File) = {
     val inputStream = new BufferedInputStream(new FileInputStream(file))
     try {
       val stream = DS.ofStream(inputStream)
