@@ -43,7 +43,7 @@ object Instruction {
   // FACTORY
   private val memarg_instructions: List[Byte] = (0x28 to 0x3e).toList.map(_.toByte)
   private def isMemArg(b: Byte) = memarg_instructions contains b
-  private def isNumeric(b: Byte) = b >= 0x45 && b <= 0xbf
+  private def isNumeric(b: Byte) = (b & 0x000000ff) >= 0x00000045 && b <= 0x000000bf
 
   private[ast] def apply(stream: DataStream): Instruction = stream.take match {
     // control instructions

@@ -12,7 +12,7 @@ object Parser {
     val inputStream = new BufferedInputStream(new FileInputStream(file))
     try {
       val stream = DS.ofStream(inputStream)
-      Module(stream)
+      BinaryModule(stream)
     } finally {
       try {
         inputStream.close

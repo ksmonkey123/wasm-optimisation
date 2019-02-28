@@ -22,8 +22,8 @@ sealed trait DataStream {
 }
 
 object DataStream {
-  def ofStream(s: InputStream): DataStream = new InputStreamDataStream(s)
-  def ofList(l: List[Byte]): DataStream = new ListBackedDataStream(l)
+  def ofStream(s: InputStream): DataStream = new CompositeDataStream(Nil, new InputStreamDataStream(s))
+  def ofList(l: List[Byte]): DataStream = new CompositeDataStream(Nil, new ListBackedDataStream(l))
 }
 
 private class CompositeDataStream(var list: List[Byte], val parent: DataStream) extends DataStream {
@@ -39,13 +39,14 @@ private class CompositeDataStream(var list: List[Byte], val parent: DataStream) 
   }
 
   def take = {
-    if (list.isEmpty)
+    val res = if (list.isEmpty)
       parent.take
     else {
       val next = list.head
       list = list.tail
       next
     }
+    res
   }
 
 }

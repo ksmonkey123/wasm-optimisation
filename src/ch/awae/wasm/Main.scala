@@ -5,6 +5,8 @@ import ch.awae.wasm.ast.implicits._
 
 object Main extends App {
 
-  println("math.wasm".file.ast)
+  val module = "change.wasm".file.ast.module
+  
+  println(module)
 
 }

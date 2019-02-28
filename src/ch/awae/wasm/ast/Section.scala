@@ -2,14 +2,14 @@ package ch.awae.wasm.ast
 
 sealed trait ImportDescription
 
-case class TypeDesc(typeId: Int) extends ImportDescription
+case class FuncDesc(typeId: Int) extends ImportDescription
 case class TableDesc(tableType: TableType) extends ImportDescription
 case class MemDesc(memType: MemoryType) extends ImportDescription
 case class GlobalDesc(globalType: GlobalType) extends ImportDescription
 
 object ImportDescription {
   private[ast] def apply(stream: DataStream) = stream.take match {
-    case 0x00 => TypeDesc(I32(stream).unsigned)
+    case 0x00 => FuncDesc(I32(stream).unsigned)
     case 0x01 => TableDesc(TableType(stream))
     case 0x02 => MemDesc(MemoryType(stream))
     case 0x03 => GlobalDesc(GlobalType(stream))

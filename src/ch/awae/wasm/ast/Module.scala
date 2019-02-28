@@ -1,76 +1,53 @@
 package ch.awae.wasm.ast
 
-import scala.annotation.tailrec
-import scala.reflect.ClassTag
+case class Module(types: List[FunctionType], funcs: List[WasmFunction], remainder: List[Section]) {
+  def ast: BinaryModule = {
+    val (dataSection, temp) = BinaryModule(this.remainder).selectAll[DataSection]
+    val (iprtSection, remainder) = temp.selectAll[ImportSection]
 
-case class RawModule(sections: List[Section])
+    val (fnx, code) = funcs map {
+      case DeclaredFunction(idx, locals, code) => (idx, Code(locals, Expression(code)))
+      case _                                   => null
+    } filter (_ != null) unzip
 
-case object RawModule {
+    var sections: List[Section] = Nil
 
-  val signature: List[Byte] = List(0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00)
+    if (dataSection.isDefined) sections ::= dataSection.get
+    if (!code.isEmpty) sections ::= CodeSection(code)
+    if (!remainder.sections.isEmpty) sections :::= remainder.sections
+    if (!fnx.isEmpty) sections ::= FunctionSection(fnx)
+    if (iprtSection.isDefined) sections ::= iprtSection.get
+    if (!types.isEmpty) sections ::= TypeSection(types)
 
-  private[ast] def apply(stream: DataStream): RawModule =
-    if (stream.take(8) != signature)
-      throw new IllegalArgumentException
-    else
-      RawModule(readSections(stream))
-
-  @tailrec
-  private def readSections(stream: DataStream, acc: List[Section] = Nil): List[Section] = stream.takeOptional match {
-    case Some(x) => readSections(stream, Section(x, stream) :: acc)
-    case None    => acc.reverse
+    BinaryModule(sections)
   }
 }
 
-case class Module(rawSections: List[Section], types: TypeSection, functions: List[WasmFunction]) {
-  def raw[T <: Section](implicit ev: ClassTag[T]) = rawSections filter (ev unapply _ isDefined)
-}
-
 object Module {
-  private[ast] def apply(stream: DataStream): Module = {
+  private[ast] def apply(raw0: BinaryModule): Module = {
+    val (types, raw1) = raw0.selectAll[TypeSection]
+    val (funcs, raw2) = raw1.selectAll[FunctionSection]
+    val (imprs, raw3) = raw2.selectAll[ImportSection]
+    val (codes, raw4) = raw3.selectAll[CodeSection]
+    val remainder = (imprs map (_ :: Nil) getOrElse Nil) ::: raw4.sections
 
-    @tailrec
-    def scan(
-      sections:  List[Section],
-      remainder: List[Section]   = Nil,
-      types:     TypeSection     = null,
-      funcs:     FunctionSection = null,
-      codes:     CodeSection     = null,
-      impos:     ImportSection   = null): Module = {
-      if (sections.isEmpty)
-        collect(remainder.reverse, types, funcs, codes, impos)
+    val localFunctions =
+      if (funcs.isDefined && codes.isDefined)
+        funcs.get.typeIndices zip codes.get.functions map {
+          case (idx, Code(locals, body)) => DeclaredFunction(idx, locals, body.instructions)
+        }
       else
-        sections.head match {
-          case x: TypeSection                      => scan(sections.tail, remainder, x, funcs, codes, impos)
-          case x: FunctionSection                  => scan(sections.tail, remainder, types, x, codes, impos)
-          case x: CodeSection                      => scan(sections.tail, remainder, types, funcs, x, impos)
-          case x: ImportSection                    => scan(sections.tail, remainder, types, funcs, codes, x)
-          case x if !x.isInstanceOf[CustomSection] => scan(sections.tail, remainder, types, funcs, codes, impos)
-          case x                                   => scan(sections.tail, x :: remainder, types, funcs, codes, impos)
+        Nil
+
+    val importedFunctions =
+      if (imprs.isDefined)
+        imprs.get.imports filter (_.desc.isInstanceOf[FuncDesc]) map {
+          case ImportEntry(mod, name, FuncDesc(idx)) => ImportedFunction(idx, mod, name)
+          case _                                     => ???
         }
-    }
+      else Nil
 
-    def collect(remainder: List[Section], types: TypeSection, funcs: FunctionSection, codes: CodeSection, impos: ImportSection): Module = {
-      val declaredFunctions =
-        if (funcs != null)
-          funcs.typeIndices zip codes.functions map {
-            case (tIdx, Code(locals, body)) => DeclaredFunction(tIdx, locals, body)
-          }
-        else Nil
-      val otherImports = Option(impos) map { _.imports filter { !_.desc.isInstanceOf[TypeDesc] } }
-      val functionImports = Option(impos) map {
-        _.imports filter { _.desc.isInstanceOf[TypeDesc] } map {
-          case ImportEntry(mod, name, TypeDesc(typeId)) => ImportedFunction(typeId, mod, name)
-          case _                                        => ???
-        }
-      }
-
-      Module(if (otherImports.isDefined) ImportSection(otherImports.get) :: remainder else remainder, types,
-        if (functionImports.isDefined) functionImports.get ::: declaredFunctions else declaredFunctions)
-    }
-
-    scan(RawModule(stream).sections)
-
+    Module(types map (_.types) getOrElse Nil, importedFunctions ::: localFunctions, remainder)
   }
 
 }
