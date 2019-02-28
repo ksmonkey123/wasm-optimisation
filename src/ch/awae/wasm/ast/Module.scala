@@ -46,9 +46,13 @@ object Module {
     }
 
     def collect(remainder: List[Section], types: TypeSection, funcs: FunctionSection, codes: CodeSection, impos: ImportSection): Module = {
-      val declaredFunctions = funcs.typeIndices zip codes.functions map {
-        case (tIdx, Code(locals, body)) => DeclaredFunction(tIdx, locals, body)
-      }
+
+      val declaredFunctions =
+        if (funcs != null)
+          funcs.typeIndices zip codes.functions map {
+            case (tIdx, Code(locals, body)) => DeclaredFunction(tIdx, locals, body)
+          }
+        else Nil
       val otherImports = Option(impos) map { _.imports filter { !_.desc.isInstanceOf[TypeDesc] } }
       val functionImports = Option(impos) map {
         _.imports filter { _.desc.isInstanceOf[TypeDesc] } map {
@@ -56,7 +60,7 @@ object Module {
           case _                                        => ???
         }
       }
-      
+
       Module(if (otherImports.isDefined) ImportSection(otherImports.get) :: remainder else remainder, types,
         if (functionImports.isDefined) functionImports.get ::: declaredFunctions else declaredFunctions)
     }
