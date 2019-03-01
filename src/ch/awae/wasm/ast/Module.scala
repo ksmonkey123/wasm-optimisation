@@ -1,23 +1,25 @@
 package ch.awae.wasm.ast
 
+import scala.language.postfixOps
+
 case class Module(types: List[FunctionType], funcs: List[WasmFunction], remainder: List[Section]) {
   def ast: BinaryModule = {
     val (dataSection, temp) = BinaryModule(this.remainder).selectAll[DataSection]
-    val (iprtSection, remainder) = temp.selectAll[ImportSection]
+    val (importSection, remainder) = temp.selectAll[ImportSection]
 
     val (fnx, code) = funcs map {
-      case DeclaredFunction(idx, locals, code) => (idx, Code(locals, Expression(code)))
-      case _                                   => null
+      case DeclaredFunction(idx, locals, cde) => (idx, Code(locals, Expression(cde)))
+      case _ => null
     } filter (_ != null) unzip
 
     var sections: List[Section] = Nil
 
     if (dataSection.isDefined) sections ::= dataSection.get
-    if (!code.isEmpty) sections ::= CodeSection(code)
-    if (!remainder.sections.isEmpty) sections :::= remainder.sections
-    if (!fnx.isEmpty) sections ::= FunctionSection(fnx)
-    if (iprtSection.isDefined) sections ::= iprtSection.get
-    if (!types.isEmpty) sections ::= TypeSection(types)
+    if (code.nonEmpty) sections ::= CodeSection(code)
+    if (remainder.sections.nonEmpty) sections :::= remainder.sections
+    if (fnx.nonEmpty) sections ::= FunctionSection(fnx)
+    if (importSection.isDefined) sections ::= importSection.get
+    if (types.nonEmpty) sections ::= TypeSection(types)
 
     BinaryModule(sections)
   }
@@ -43,7 +45,7 @@ object Module {
       if (imprs.isDefined)
         imprs.get.imports filter (_.desc.isInstanceOf[FuncDesc]) map {
           case ImportEntry(mod, name, FuncDesc(idx)) => ImportedFunction(idx, mod, name)
-          case _                                     => ???
+          case x => throw new MatchError(x)
         }
       else Nil
 

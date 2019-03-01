@@ -1,13 +1,10 @@
 package ch.awae.wasm.ast
 
 trait ResultType
+
 trait ValueType extends ResultType
 
 object ValueType {
-  case object i32 extends ValueType
-  case object i64 extends ValueType
-  case object f32 extends ValueType
-  case object f64 extends ValueType
 
   private[ast] def apply(stream: DataStream): ValueType = stream.take match {
     case 0x7f => i32
@@ -15,15 +12,24 @@ object ValueType {
     case 0x7d => f32
     case 0x7c => f64
   }
+
+  case object i32 extends ValueType
+
+  case object i64 extends ValueType
+
+  case object f32 extends ValueType
+
+  case object f64 extends ValueType
 }
 
 object ResultType {
-  case object void extends ResultType
 
   private[ast] def apply(stream: DataStream) = stream.take match {
     case 0x40 => void
-    case x    => ValueType(x)
+    case x => ValueType(x)
   }
+
+  case object void extends ResultType
 }
 
 case class FunctionType(paramTypes: List[ValueType], returnType: Option[ValueType])
@@ -37,6 +43,7 @@ object FunctionType {
 sealed trait Limit
 
 case class MinLimit(min: Int) extends Limit
+
 case class MinMaxLimit(min: Int, max: Int) extends Limit
 
 object Limit {
@@ -47,11 +54,13 @@ object Limit {
 }
 
 case class MemoryType(limits: Limit)
+
 object MemoryType {
   private[ast] def apply(stream: DataStream): MemoryType = MemoryType(Limit(stream))
 }
 
 case class TableType(limits: Limit)
+
 object TableType {
   private[ast] def apply(stream: DataStream): TableType = stream.take match {
     case 0x70 => TableType(Limit(stream))
@@ -59,12 +68,13 @@ object TableType {
 }
 
 case class GlobalType(valType: ValueType, isFinal: Boolean)
+
 object GlobalType {
   private[ast] def apply(stream: DataStream): GlobalType = {
     val valType = ValueType(stream)
     stream.take match {
-      case 0x00 => GlobalType(valType, true)
-      case 0x01 => GlobalType(valType, false)
+      case 0x00 => GlobalType(valType, isFinal = true)
+      case 0x01 => GlobalType(valType, isFinal = false)
     }
   }
 }

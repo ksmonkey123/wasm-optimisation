@@ -11,13 +11,16 @@ package object ast {
 
   implicit private[ast] class AfterValueDo[T](val value: T) extends AnyVal {
     def afterVerify(f: => Boolean): T = if (f) value else throw new AssertionError
+
     def afterGet[S](f: => S): S = f
   }
 
   object implicits {
+
     implicit class File2AstWrapper(val file: java.io.File) extends AnyVal {
-      def ast = Parser.parseFile(file)
+      def ast: BinaryModule = Parser.parseFile(file)
     }
+
   }
 
 }

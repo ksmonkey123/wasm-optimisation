@@ -1,21 +1,21 @@
 package ch.awae.wasm.ast
 
-import java.io.BufferedInputStream
-import java.io.FileInputStream
+import java.io.{BufferedInputStream, File, FileInputStream}
+
+import ch.awae.wasm.io.{DataStream => DS}
+
 import scala.util.control.NonFatal
-import ch.awae.wasm.io.{ DataStream => DS }
-import java.io.File
 
 object Parser {
 
-  def parseFile(file: File) = {
+  def parseFile(file: File): BinaryModule = {
     val inputStream = new BufferedInputStream(new FileInputStream(file))
     try {
       val stream = DS.ofStream(inputStream)
       BinaryModule(stream)
     } finally {
       try {
-        inputStream.close
+        inputStream.close()
       } catch {
         case NonFatal(_) =>
       }

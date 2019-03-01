@@ -3,8 +3,11 @@ package ch.awae.wasm.ast
 sealed trait ImportDescription
 
 case class FuncDesc(typeId: Int) extends ImportDescription
+
 case class TableDesc(tableType: TableType) extends ImportDescription
+
 case class MemDesc(memType: MemoryType) extends ImportDescription
+
 case class GlobalDesc(globalType: GlobalType) extends ImportDescription
 
 object ImportDescription {
@@ -17,24 +20,33 @@ object ImportDescription {
 }
 
 case class ImportEntry(mod: String, name: String, desc: ImportDescription)
+
 object ImportEntry {
   private[ast] def apply(stream: DataStream): ImportEntry = ImportEntry(Name(stream), Name(stream), ImportDescription(stream))
 }
 
 case class GlobalEntry(gt: GlobalType, expr: Expression)
+
 object GlobalEntry {
   private[ast] def apply(stream: DataStream): GlobalEntry = GlobalEntry(GlobalType(stream), Expression(stream))
 }
 
 sealed trait ExportType
+
 object ExportType {
+
   case class Function(id: Int) extends ExportType
+
   case class Table(id: Int) extends ExportType
+
   case class Memory(id: Int) extends ExportType
+
   case class Global(id: Int) extends ExportType
+
 }
 
 case class ExportEntry(name: String, expType: ExportType)
+
 object ExportEntry {
   private[ast] def apply(stream: DataStream): ExportEntry = {
     val name = Name(stream)
@@ -51,11 +63,13 @@ object ExportEntry {
 }
 
 case class ElementEntry(tableId: Int, expr: Expression, functions: List[Int])
+
 object ElementEntry {
   private[ast] def apply(stream: DataStream): ElementEntry = ElementEntry(I32(stream).unsigned, Expression(stream), Vec(stream, I32(_).unsigned))
 }
 
 case class DataEntry(memId: Int, expr: Expression, data: List[Byte])
+
 object DataEntry {
   private[ast] def apply(stream: DataStream): DataEntry = DataEntry(I32(stream).unsigned, Expression(stream), Vec(stream, _.take))
 }
@@ -63,16 +77,27 @@ object DataEntry {
 trait Section
 
 case class CustomSection(content: Array[Byte]) extends Section
+
 case class TypeSection(types: List[FunctionType]) extends Section
+
 case class ImportSection(imports: List[ImportEntry]) extends Section
+
 case class FunctionSection(typeIndices: List[Int]) extends Section
+
 case class TableSection(tableTypes: List[TableType]) extends Section
+
 case class MemorySection(memTypes: List[MemoryType]) extends Section
+
 case class GlobalSection(entries: List[GlobalEntry]) extends Section
+
 case class ExportSection(exports: List[ExportEntry]) extends Section
+
 case class StartSection(idx: Int) extends Section
+
 case class ElementSection(elements: List[ElementEntry]) extends Section
+
 case class CodeSection(functions: List[Code]) extends Section
+
 case class DataSection(entries: List[DataEntry]) extends Section
 
 object Section {
