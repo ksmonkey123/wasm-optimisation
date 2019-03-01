@@ -2,7 +2,9 @@ package ch.awae.wasm.ast
 
 import scala.annotation.tailrec
 
-trait NumericValue
+trait NumericValue {
+  def bytes: List[Byte]
+}
 
 object NumericValue {
 
@@ -14,6 +16,7 @@ object NumericValue {
         .map { case (shift, byte) => (byte & 0x7f) << shift }
         .reduce(_ | _)
     }
+
   }
 
   case class I64(bytes: List[Byte]) extends NumericValue
@@ -24,6 +27,21 @@ object NumericValue {
 
   object I32 {
     private[ast] def apply(stream: DataStream): I32 = LSB128(stream, apply)
+
+    def apply(i: Int): I32 = {
+      def rec(v: Int, acc: List[Byte]): List[Byte] = {
+        val byte = (v & 0x7f).toByte
+        val nextV = v >> 7
+
+        val toEmit = if (nextV != 0) (byte | 0x80).toByte else byte
+
+        if (nextV != 0)
+          rec(nextV, toEmit :: acc)
+        else (toEmit :: acc).reverse
+      }
+
+      I32(rec(i, Nil))
+    }
   }
 
   object I64 {

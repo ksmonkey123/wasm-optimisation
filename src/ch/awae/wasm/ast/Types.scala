@@ -33,7 +33,6 @@ object Types {
       case 0x40 => void
       case x => ValueType(x)
     }
-
     case object void extends ResultType
 
   }
@@ -66,7 +65,6 @@ object Types {
   }
 
   case class TableType(limits: Limit)
-
   object TableType {
     private[ast] def apply(stream: DataStream): TableType = stream.take match {
       case 0x70 => TableType(Limit(stream))

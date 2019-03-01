@@ -5,9 +5,7 @@ import ch.awae.wasm.ast.Types.ResultType
 
 import scala.annotation.tailrec
 
-trait Instruction {
-  def hasSideEffects = false
-}
+trait Instruction
 
 object Instruction {
 
