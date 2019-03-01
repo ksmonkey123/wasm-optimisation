@@ -13,7 +13,11 @@ package object ast {
     def afterVerify(f: => Boolean): T = if (f) value else throw new AssertionError
 
     def afterGet[S](f: => S): S = f
+
+    def >>=[S](f: T => S): S = f(value)
   }
+
+  implicit private[ast] def int2byte(i: Int): Byte = (i & 0x000000ff).toByte
 
   object implicits {
 

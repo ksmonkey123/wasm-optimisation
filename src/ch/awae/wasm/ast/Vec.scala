@@ -7,4 +7,11 @@ object Vec {
     val size = I32(stream).unsigned
     (for (_ <- 1 to size) yield elemParser(stream)).toList
   }
+
+  private[ast] def compile(elements: List[Byte]): List[Byte] = I32(elements.size).bytes ::: elements
+
+  private[ast] def compile[T](elements: List[T], mapping: T => List[Byte]): List[Byte] = {
+    I32(elements.size).bytes ::: elements.flatMap(mapping)
+  }
+
 }

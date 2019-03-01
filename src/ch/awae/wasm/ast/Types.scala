@@ -30,10 +30,11 @@ object Types {
   object ResultType {
 
     private[ast] def apply(stream: DataStream) = stream.take match {
-      case 0x40 => void
+      case 0x40 => VOID
       case x => ValueType(x)
     }
-    case object void extends ResultType
+
+    case object VOID extends ResultType
 
   }
 

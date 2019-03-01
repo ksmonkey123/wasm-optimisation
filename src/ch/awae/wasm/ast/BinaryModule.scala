@@ -13,7 +13,7 @@ case object BinaryModule {
 
   val signature: List[Byte] = List(0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00) map (_.toByte)
 
-  private[ast] def apply(stream: DataStream): BinaryModule =
+  def apply(stream: DataStream): BinaryModule =
     if (stream.take(8) != signature)
       throw new IllegalArgumentException
     else
