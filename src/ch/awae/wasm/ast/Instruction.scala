@@ -1,26 +1,29 @@
 package ch.awae.wasm.ast
 
+import ch.awae.wasm.ast.NumericValue._
+import ch.awae.wasm.ast.Types.ResultType
+
 import scala.annotation.tailrec
 
 trait Instruction {
   def hasSideEffects = false
 }
 
-trait ControlInstruction extends Instruction
-
-trait BlockInstruction extends ControlInstruction {
-  def blockType: ResultType
-}
-
-trait ParametricInstruction extends Instruction
-
-trait VariableInstruction extends Instruction
-
-trait MemoryInstruction extends Instruction
-
-trait NumericInstruction extends Instruction
-
 object Instruction {
+
+  trait ControlInstruction extends Instruction
+
+  trait BlockInstruction extends ControlInstruction {
+    def blockType: ResultType
+  }
+
+  trait ParametricInstruction extends Instruction
+
+  trait VariableInstruction extends Instruction
+
+  trait MemoryInstruction extends Instruction
+
+  trait NumericInstruction extends Instruction
 
   // FACTORY
   private val memarg_instructions: List[Byte] = (0x28 to 0x3e).toList.map(_.toByte)
@@ -124,10 +127,4 @@ object Instruction {
 
   case object MEMORY_GROW extends MemoryInstruction
 
-}
-
-case class Expression(instructions: List[Instruction])
-
-object Expression {
-  private[ast] def apply(stream: DataStream): Expression = Expression(Instruction.getInstructionsForBlock(stream)._1)
 }

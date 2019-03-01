@@ -1,5 +1,9 @@
 package ch.awae.wasm.ast
 
+import ch.awae.wasm.ast.Section._
+import ch.awae.wasm.ast.Types.FunctionType
+import ch.awae.wasm.ast.WasmFunction.{DeclaredFunction, ImportedFunction}
+
 import scala.language.postfixOps
 
 case class Module(types: List[FunctionType], funcs: List[WasmFunction], remainder: List[Section]) {
