@@ -44,7 +44,6 @@ private object LSB128 {
       case x if x < 0 => collect(x :: acc)
       case x => (x :: acc).reverse
     }
-
     f(collect(Nil))
   }
 
