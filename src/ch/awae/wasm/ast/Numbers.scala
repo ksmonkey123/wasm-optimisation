@@ -1,5 +1,7 @@
 package ch.awae.wasm.ast
 
+import scala.annotation.tailrec
+
 trait NumericValue
 
 case class I32(bytes: List[Byte]) extends NumericValue {
@@ -35,8 +37,15 @@ object F64 {
 }
 
 private object LSB128 {
-  def apply[T](stream: DataStream, f: List[Byte] => T, acc: List[Byte] = Nil): T = stream.take match {
-    case x if x < 0 => apply(stream, f, x :: acc)
-    case x => f((x :: acc).reverse)
+
+  def apply[T](stream: DataStream, f: List[Byte] => T): T = {
+    @tailrec
+    def collect(acc: List[Byte]): List[Byte] = stream.take match {
+      case x if x < 0 => collect(x :: acc)
+      case x => (x :: acc).reverse
+    }
+
+    f(collect(Nil))
   }
+
 }
