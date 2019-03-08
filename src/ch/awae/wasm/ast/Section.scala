@@ -8,7 +8,7 @@ trait Section
 
 
 object Section {
-  private[ast] def apply(sectionType: Byte, stream: DataStream): Section = {
+  def apply(sectionType: Byte, stream: DataStream): Section = {
     val length = I32(stream).unsigned
     sectionType match {
       case 0x00 => CustomSection(stream.take(length).toArray)

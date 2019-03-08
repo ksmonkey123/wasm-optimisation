@@ -1,6 +1,7 @@
 package ch.awae.wasm.ast
 
 import ch.awae.wasm.ast.Code.Locals
+import ch.awae.wasm.ast.Instruction.VariableInstruction
 import ch.awae.wasm.ast.NumericValue.I32
 import ch.awae.wasm.ast.Section._
 import ch.awae.wasm.ast.Types._
@@ -95,9 +96,24 @@ object Compiler {
   def compileInstruction: Instruction => List[Byte] = {
     case Instruction.UNREACHABLE => 0 :: Nil
     case Instruction.NOP => 1 :: Nil
-    case Instruction.BLOCK(ResultType.VOID, instructions) => 2 :: instructions.flatMap(compileInstruction) ::: List(0x0b.toByte)
+    case Instruction.BLOCK(typ, instructions) => 2 :: compileType(typ) ::: instructions.flatMap(compileInstruction) ::: List(0x0b.toByte)
+    case Instruction.LOOP(typ, instructions) => 3 :: compileType(typ) ::: instructions.flatMap(compileInstruction) ::: List(0x0b.toByte)
+    case Instruction.IFELSE(typ, ifBlock, Nil) => 4 :: compileType(typ) ::: ifBlock.flatMap(compileInstruction) ::: List(0x0b.toByte)
+    case Instruction.IFELSE(typ, ifBlock, elseBlock) => 4 :: compileType(typ) ::: ifBlock.flatMap(compileInstruction) ::: List(0x05.toByte) ::: elseBlock.flatMap(compileInstruction) ::: List(0x0b.toByte)
+    case Instruction.BREAK(label) => 0x0c.toByte :: I32(label).bytes
+    case Instruction.BREAK_COND(label) => 0x0d.toByte :: I32(label).bytes
+    case Instruction.BREAK_TABLE(table, default) => 0x0e.toByte :: Vec.compile(table, I32(_:Int).bytes) ::: I32(default).bytes
+    case Instruction.RETURN => 0x0f.toByte :: Nil
+    case Instruction.CALL(id) => 0x10.toByte :: I32(id).bytes
+    case Instruction.CALL_INDIRECT(id) => 0x11.toByte :: I32(id).bytes ::: List(0.toByte)
+    case Instruction.DROP => 0x1a.toByte :: Nil
+    case Instruction.SELECT => 0x1b.toByte :: Nil
+    case x : VariableInstruction => x.inst :: I32(x.id).bytes
+    case Instruction.MEMARG_INSTRUCTION(inst, a, o) => inst :: I32(a).bytes ::: I32(o).bytes
+    case Instruction.MEMORY_SIZE => 0x3f.toByte :: 0x00.toByte :: Nil
+    case Instruction.MEMORY_GROW => 0x4f.toByte :: 0x00.toByte :: Nil
+    case Instruction.CONST_INSTRUCTION(inst, value) => inst :: value.bytes
     case Instruction.PLAIN_NUMERIC_INSTRUCTION(inst) => inst :: Nil
-    case _ => Nil
   }
 
 }

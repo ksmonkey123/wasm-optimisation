@@ -17,7 +17,7 @@ object Instruction {
 
   trait ParametricInstruction extends Instruction
 
-  trait VariableInstruction extends Instruction
+  abstract class VariableInstruction(val inst: Byte) extends Instruction { def id:Int }
 
   trait MemoryInstruction extends Instruction
 
@@ -95,15 +95,15 @@ object Instruction {
 
   case class CALL_INDIRECT(typeId: Int) extends ControlInstruction
 
-  case class LOCAL_GET(id: Int) extends VariableInstruction
+  case class LOCAL_GET(id: Int) extends VariableInstruction(0x20)
 
-  case class LOCAL_SET(id: Int) extends VariableInstruction
+  case class LOCAL_SET(id: Int) extends VariableInstruction(0x21)
 
-  case class LOCAL_TEE(id: Int) extends VariableInstruction
+  case class LOCAL_TEE(id: Int) extends VariableInstruction(0x22)
 
-  case class GLOBAL_GET(id: Int) extends VariableInstruction
+  case class GLOBAL_GET(id: Int) extends VariableInstruction(0x23)
 
-  case class GLOBAL_SET(id: Int) extends VariableInstruction
+  case class GLOBAL_SET(id: Int) extends VariableInstruction(0x24)
 
   case class MEMARG_INSTRUCTION(inst: Byte, a: Int, o: Int) extends MemoryInstruction
 
