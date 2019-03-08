@@ -3,3 +3,4 @@
 /.cache-main
 /.idea/
 /wasm.iml
+/out/
