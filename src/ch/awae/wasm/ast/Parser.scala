@@ -20,6 +20,6 @@ object Parser {
         case NonFatal(_) =>
       }
     }
-  }
 
+  }
 }

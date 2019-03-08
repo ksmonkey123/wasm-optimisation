@@ -12,7 +12,7 @@ object NumericValue {
     def unsigned: Int = {
       bytes.indices.toList
         .map(7 * _)
-        .zip(bytes.reverse)
+        .zip(bytes)
         .map { case (shift, byte) => (byte & 0x7f) << shift }
         .reduce(_ | _)
     }

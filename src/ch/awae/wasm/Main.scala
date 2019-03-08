@@ -1,20 +1,19 @@
 package ch.awae.wasm
 
-import ch.awae.wasm.ast.BinaryModule
+import ch.awae.wasm.ast.NumericValue.I32
 import ch.awae.wasm.ast.implicits._
+import ch.awae.wasm.ast.{BinaryModule, Compiler}
 import ch.awae.wasm.io.DataStream
 import ch.awae.wasm.io.implicits._
 
 object Main extends App {
 
-  val module = "change.wasm".file.ast
+  val x = "change.wasm".file.ast
 
-  println(module)
+  val y = Compiler.compile(x)
 
-  val bin = ast.Compiler.compile(module)
+  Console println BinaryModule(DataStream.ofList(y))
 
-  val mod2 = BinaryModule(DataStream.ofList(bin))
-
-  println(mod2)
+  Console println I32(123457).unsigned
 
 }
