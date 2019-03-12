@@ -13,4 +13,6 @@ object Main extends App {
 
   Console println (module == mod2)
 
+  Compiler.compile(module.ast).write("out.wasm")
+
 }
