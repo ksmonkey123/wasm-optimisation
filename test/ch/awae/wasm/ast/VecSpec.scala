@@ -1,17 +1,17 @@
 package ch.awae.wasm.ast
 
-import ch.awae.wasm.io.DataStream
+import ch.awae.wasm.io.{DataStream => DS}
 import org.scalatest._
 
 class VecSpec extends FlatSpec with Matchers {
 
   "Vec" should "parse the correct number of elements" in {
-    val stream = DataStream.ofList(List(3, 1, 2, 3).map(_.toByte))
+    val stream = DS.ofList(List(3, 1, 2, 3).map(_.toByte))
     assertResult(List(1, 2, 3))(Vec(stream, _.take.toInt))
   }
 
   it should "return an empty list if size is zero" in {
-    val stream = DataStream.ofList(List(0, 1, 2, 3).map(_.toByte))
+    val stream = DS.ofList(List(0, 1, 2, 3).map(_.toByte))
     assertResult(Nil)(Vec(stream, _.take))
     assertResult(1)(stream.take)
   }
