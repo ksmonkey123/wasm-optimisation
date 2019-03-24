@@ -11,6 +11,8 @@ object Instruction {
 
   trait ControlInstruction extends Instruction
 
+  trait BranchInstruction extends ControlInstruction
+
   trait BlockInstruction extends ControlInstruction {
     def blockType: ResultType
   }
@@ -85,11 +87,11 @@ object Instruction {
 
   case class IFELSE(blockType: ResultType, ifBlock: List[Instruction], elseBlock: List[Instruction]) extends BlockInstruction
 
-  case class BREAK(label: Int) extends ControlInstruction
+  case class BREAK(label: Int) extends BranchInstruction
 
-  case class BREAK_COND(label: Int) extends ControlInstruction
+  case class BREAK_COND(label: Int) extends BranchInstruction
 
-  case class BREAK_TABLE(table: List[Int], default: Int) extends ControlInstruction
+  case class BREAK_TABLE(table: List[Int], default: Int) extends BranchInstruction
 
   case class CALL(funcId: Int) extends ControlInstruction
 
@@ -115,7 +117,7 @@ object Instruction {
 
   case object NOP extends ControlInstruction
 
-  case object RETURN extends ControlInstruction
+  case object RETURN extends BranchInstruction
 
   case object DROP extends ParametricInstruction
 
