@@ -12,10 +12,11 @@ object Builder {
     // add global return block
     val returnBlock = new SimpleBlock
     flow += returnBlock
+    flow.end = returnBlock.uuid
     // main block
     val mainBlock = new SimpleBlock
     flow += mainBlock
-    flow.main = mainBlock.uuid
+    flow.start = mainBlock.uuid
     // parse method body
     parseInstructions(function.body, mainBlock, returnBlock, returnBlock, returnBlock::Nil)(flow)
 
