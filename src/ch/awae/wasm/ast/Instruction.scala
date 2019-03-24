@@ -72,7 +72,7 @@ object Instruction {
     case 0x42 => CONST_INSTRUCTION(0x42, I64(stream))
     case 0x43 => CONST_INSTRUCTION(0x43, F32(stream))
     case 0x44 => CONST_INSTRUCTION(0x44, F64(stream))
-    case x if isNumeric(x) => PLAIN_NUMERIC_INSTRUCTION(x)
+    case x if isNumeric(x) => ARITHMETIC_INSTRUCTION(x)
   }
 
   @tailrec
@@ -111,7 +111,7 @@ object Instruction {
 
   case class CONST_INSTRUCTION(inst: Byte, value: NumericValue) extends NumericInstruction
 
-  case class PLAIN_NUMERIC_INSTRUCTION(inst: Byte) extends NumericInstruction
+  case class ARITHMETIC_INSTRUCTION(inst: Byte) extends NumericInstruction
 
   case object UNREACHABLE extends ControlInstruction
 

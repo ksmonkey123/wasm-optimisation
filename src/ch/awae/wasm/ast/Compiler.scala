@@ -113,7 +113,7 @@ object Compiler {
     case Instruction.MEMORY_SIZE => 0x3f.toByte :: 0x00.toByte :: Nil
     case Instruction.MEMORY_GROW => 0x4f.toByte :: 0x00.toByte :: Nil
     case Instruction.CONST_INSTRUCTION(inst, value) => inst :: value.bytes
-    case Instruction.PLAIN_NUMERIC_INSTRUCTION(inst) => inst :: Nil
+    case Instruction.ARITHMETIC_INSTRUCTION(inst) => inst :: Nil
   }
 
 }

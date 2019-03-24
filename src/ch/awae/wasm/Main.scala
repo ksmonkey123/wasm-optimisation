@@ -18,6 +18,8 @@ object Main extends App {
 
   val flow = cfg.Builder.build(f)
 
+  flow.prune()
+
   println(f)
 
   println(flow.dot)

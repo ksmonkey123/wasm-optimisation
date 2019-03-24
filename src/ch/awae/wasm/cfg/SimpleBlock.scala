@@ -7,10 +7,11 @@ import ch.awae.wasm.ast.Instruction
 import scala.collection.mutable.ListBuffer
 
 class SimpleBlock(
+                 val controlFlow: ControlFlow,
                  val uuid: UUID = UUID.randomUUID(),
+                 val stackframe : Int,
                  private[this] val _instructions : ListBuffer[Instruction] = ListBuffer.empty,
-                 var successors : List[UUID] = Nil
-                 ) {
+                 var successors : List[UUID] = Nil) {
 
   def instructions: List[Instruction] = _instructions.toList
 
@@ -26,17 +27,22 @@ class SimpleBlock(
   }
 
   def dot : String = {
-    val node = "\"" + uuid + "\" [shape=box, label=\"" + instructions.map(_.getClass.getSimpleName).reduceOption(_ + "\\n" + _).getOrElse("") + "\"]"
-    dotSuccessors.foldLeft(node)(_+"\n" +_)
+    val node = "\"" + uuid + "\" [shape=box, label=\"" + instructions.map("  " + _.getClass.getSimpleName + "  ").foldLeft(s":: $stackframe ::")(_ + "\\n" + _) + "\"]"
+    dotSuccessors.foldLeft(node)(_ + "\n" + _)
   }
 
-
+  def predecessors : List[UUID] = for {
+    block <- controlFlow.blocks
+    if block.successors contains uuid
+  } yield {
+    block.uuid
+  }
 
 }
 
 object SimpleBlock {
-  def apply()(implicit controlFlow: ControlFlow):SimpleBlock = {
-    val block = new SimpleBlock
+  def apply(stackframe : Int)(implicit controlFlow: ControlFlow):SimpleBlock = {
+    val block = new SimpleBlock(controlFlow, stackframe = stackframe)
     controlFlow += block
     block
   }
