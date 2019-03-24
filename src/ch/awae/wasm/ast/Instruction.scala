@@ -42,9 +42,9 @@ object Instruction {
       val resultType = ResultType(stream)
       val (ifBlock, firstTerminator) = getInstructionsForBlock(stream)
       IFELSE(resultType, ifBlock, if (firstTerminator == 0x05) getInstructionsForBlock(stream)._1 else Nil)
-    case 0x0c => BREAK(I32(stream).unsigned)
-    case 0x0d => BREAK_COND(I32(stream).unsigned)
-    case 0x0e => BREAK_TABLE(Vec(stream, I32(_).unsigned), I32(stream).unsigned)
+    case 0x0c => BRANCH(I32(stream).unsigned)
+    case 0x0d => BRANCH_COND(I32(stream).unsigned)
+    case 0x0e => BRANCH_TABLE(Vec(stream, I32(_).unsigned), I32(stream).unsigned)
     case 0x0f => RETURN
     case 0x10 => CALL(I32(stream).unsigned)
     case 0x11 => CALL_INDIRECT(I32(stream).unsigned) afterVerify {
@@ -87,11 +87,11 @@ object Instruction {
 
   case class IFELSE(blockType: ResultType, ifBlock: List[Instruction], elseBlock: List[Instruction]) extends BlockInstruction
 
-  case class BREAK(label: Int) extends BranchInstruction
+  case class BRANCH(label: Int) extends BranchInstruction
 
-  case class BREAK_COND(label: Int) extends BranchInstruction
+  case class BRANCH_COND(label: Int) extends BranchInstruction
 
-  case class BREAK_TABLE(table: List[Int], default: Int) extends BranchInstruction
+  case class BRANCH_TABLE(table: List[Int], default: Int) extends BranchInstruction
 
   case class CALL(funcId: Int) extends ControlInstruction
 

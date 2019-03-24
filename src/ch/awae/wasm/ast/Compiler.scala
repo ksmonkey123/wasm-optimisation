@@ -100,9 +100,9 @@ object Compiler {
     case Instruction.LOOP(typ, instructions) => 3 :: compileType(typ) ::: instructions.flatMap(compileInstruction) ::: List(0x0b.toByte)
     case Instruction.IFELSE(typ, ifBlock, Nil) => 4 :: compileType(typ) ::: ifBlock.flatMap(compileInstruction) ::: List(0x0b.toByte)
     case Instruction.IFELSE(typ, ifBlock, elseBlock) => 4 :: compileType(typ) ::: ifBlock.flatMap(compileInstruction) ::: List(0x05.toByte) ::: elseBlock.flatMap(compileInstruction) ::: List(0x0b.toByte)
-    case Instruction.BREAK(label) => 0x0c.toByte :: I32(label).bytes
-    case Instruction.BREAK_COND(label) => 0x0d.toByte :: I32(label).bytes
-    case Instruction.BREAK_TABLE(table, default) => 0x0e.toByte :: Vec.compile(table, I32(_:Int).bytes) ::: I32(default).bytes
+    case Instruction.BRANCH(label) => 0x0c.toByte :: I32(label).bytes
+    case Instruction.BRANCH_COND(label) => 0x0d.toByte :: I32(label).bytes
+    case Instruction.BRANCH_TABLE(table, default) => 0x0e.toByte :: Vec.compile(table, I32(_:Int).bytes) ::: I32(default).bytes
     case Instruction.RETURN => 0x0f.toByte :: Nil
     case Instruction.CALL(id) => 0x10.toByte :: I32(id).bytes
     case Instruction.CALL_INDIRECT(id) => 0x11.toByte :: I32(id).bytes ::: List(0.toByte)

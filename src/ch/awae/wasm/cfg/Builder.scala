@@ -15,6 +15,7 @@ object Builder {
     // main block
     val mainBlock = new SimpleBlock
     flow += mainBlock
+    flow.main = mainBlock.uuid
     // parse method body
     parseInstructions(function.body, mainBlock, returnBlock, returnBlock, returnBlock::Nil)(flow)
 
@@ -41,16 +42,16 @@ object Builder {
         currentBlock += RETURN
         currentBlock.successors = List(returnBlock.uuid)
         parseInstructions(xs, SimpleBlock(), successorBlock, returnBlock, branchTargets)
-      case BREAK(index) :: xs =>
-        currentBlock += BREAK(index)
+      case BRANCH(index) :: xs =>
+        currentBlock += BRANCH(index)
         currentBlock.successors = List(branchTargets(index).uuid)
         parseInstructions(xs, SimpleBlock(), successorBlock, returnBlock, branchTargets)
-      case BREAK_COND(index) :: xs =>
-        currentBlock += BREAK_COND(index)
+      case BRANCH_COND(index) :: xs =>
+        currentBlock += BRANCH_COND(index)
         val succ = SimpleBlock()
         currentBlock.successors = List(branchTargets(index).uuid, succ.uuid)
         parseInstructions(xs, succ, successorBlock, returnBlock, branchTargets)
-      case BREAK_TABLE(table, default) :: xs =>
+      case BRANCH_TABLE(table, default) :: xs =>
         currentBlock += instructions.head
         currentBlock.successors = (table.map(branchTargets) ::: branchTargets(default) :: Nil).map(_.uuid)
         parseInstructions(xs, SimpleBlock(), successorBlock, returnBlock, branchTargets)
