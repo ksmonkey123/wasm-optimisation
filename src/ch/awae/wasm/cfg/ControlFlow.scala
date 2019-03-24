@@ -60,7 +60,7 @@ class ControlFlow(private[this] var _blocks : ListBuffer[SimpleBlock] = ListBuff
   }
 
   def isIfElseBlockWithSinglePredecessor(b: SimpleBlock): Boolean = b.instructions match {
-    case IFELSE(_, _, _) :: xs => b.predecessors.length == 1
+    case IFELSE(_, _, _) :: xs => b.predecessors.length == 1 && b.uuid != start
     case _ => false
   }
 

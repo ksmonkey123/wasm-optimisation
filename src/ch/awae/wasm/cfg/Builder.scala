@@ -12,7 +12,7 @@ object Builder {
     val flow = new ControlFlow
     val frameIndexer = new SequentialIndexer(1)
     // add global return block
-    val returnBlock = new SimpleBlock(flow, stackframe = 0)
+    val returnBlock = new SimpleBlock(flow, stackframe = -1)
     flow += returnBlock
     flow.end = returnBlock.uuid
     // main block
