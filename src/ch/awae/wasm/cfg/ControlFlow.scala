@@ -11,6 +11,8 @@ class ControlFlow(private[this] var _blocks : ListBuffer[SimpleBlock] = ListBuff
   var start : UUID = _
   var end : UUID = _
 
+  def block(uuid : UUID): SimpleBlock = _blocks.find(_.uuid == uuid).get
+
   def blocks : List[SimpleBlock] = _blocks.toList
 
   def += (block: SimpleBlock) : Unit = _blocks += block
@@ -19,7 +21,7 @@ class ControlFlow(private[this] var _blocks : ListBuffer[SimpleBlock] = ListBuff
 
   def prune() : Unit = {
     removeUnreachableNodes()
-    removeEmptyNodes()
+    //removeEmptyNodes()
     mergeIfElseIntoPredecessor()
   }
 

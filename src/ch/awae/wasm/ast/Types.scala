@@ -4,9 +4,13 @@ import ch.awae.wasm.ast.NumericValue.I32
 
 object Types {
 
-  trait ResultType
+  trait ResultType {
+    def valueType:Option[ValueType]
+  }
 
-  trait ValueType extends ResultType
+  trait ValueType extends ResultType {
+    override def valueType: Option[ValueType] = Some(this)
+  }
 
   object ValueType {
 
@@ -34,7 +38,9 @@ object Types {
       case x => ValueType(x)
     }
 
-    case object VOID extends ResultType
+    case object VOID extends ResultType {
+      override def valueType: Option[ValueType] = None
+    }
 
   }
 

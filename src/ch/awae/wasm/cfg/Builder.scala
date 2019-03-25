@@ -2,17 +2,19 @@ package ch.awae.wasm.cfg
 
 import ch.awae.wasm.ast.Instruction
 import ch.awae.wasm.ast.Instruction._
+import ch.awae.wasm.ast.Types.FunctionType
 import ch.awae.wasm.ast.WasmFunction.DeclaredFunction
 import ch.awae.wasm.util.{Indexer, SequentialIndexer}
 
 object Builder {
 
 
-  def build(function: DeclaredFunction):ControlFlow = {
+  def build(function: DeclaredFunction, typeLookup: Int => FunctionType):ControlFlow = {
     val flow = new ControlFlow
     val frameIndexer = new SequentialIndexer(1)
     // add global return block
     val returnBlock = new SimpleBlock(flow, stackframe = -1)
+    returnBlock.entryType = typeLookup(function.typeIdx).returnType
     flow += returnBlock
     flow.end = returnBlock.uuid
     // main block
@@ -78,15 +80,18 @@ object Builder {
                 (implicit flow: ControlFlow,
                  stackIndexer: Indexer[Int]):SimpleBlock = {
     block match {
-      case BLOCK(_, instructions) =>
+      case BLOCK(resultType, instructions) =>
         val sb = SimpleBlock(stackIndexer.next)
+        successor.entryType = resultType.valueType
         parseInstructions(instructions, sb, successor, returnBlock, successor :: branchTargets)
         sb
-      case LOOP(_, instructions) =>
-        val sb = SimpleBlock(stackIndexer.next)
+      case LOOP(resultType, instructions) =>
+        val sb = SimpleBlock(stackIndexer.next, loopHead = true)
+        successor.entryType = resultType.valueType
         parseInstructions(instructions, sb, successor, returnBlock, sb :: branchTargets)
         sb
-      case IFELSE(_, ifBlock, elseBlock) =>
+      case IFELSE(resultType, ifBlock, elseBlock) =>
+        successor.entryType = resultType.valueType
         val branchBlock = SimpleBlock(parentStackframe)
         branchBlock += block
         val inner_if = SimpleBlock(stackIndexer.next)
