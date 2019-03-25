@@ -3,10 +3,11 @@ package ch.awae.wasm.cfg
 import java.util.UUID
 
 import ch.awae.wasm.ast.Instruction.IFELSE
+import ch.awae.wasm.ast.Module
 
 import scala.collection.mutable.ListBuffer
 
-class ControlFlow(private[this] var _blocks : ListBuffer[SimpleBlock] = ListBuffer.empty) {
+class ControlFlow(val module: Module, private[this] var _blocks : ListBuffer[SimpleBlock] = ListBuffer.empty) {
 
   var start : UUID = _
   var end : UUID = _

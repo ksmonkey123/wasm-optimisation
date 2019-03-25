@@ -42,7 +42,7 @@ class SimpleBlock(
 
   def dot : String = {
     val headSymbol = if (loopHead) "##" else "::"
-    val node = "\"" + uuid + "\" [shape=rectangle, fontname=Monospace, label=\"" + instructions.map(AsmPrinter(_) + "\\l").foldLeft(s"$headSymbol $stackframe $headSymbol\\n$typeSignatureIfNeeded")(_ + _) + "\"]"
+    val node = "\"" + uuid + "\" [shape=rectangle, fontname=Monospace, label=\"" + instructions.map(AsmPrinter(_, controlFlow.module) + "\\l").foldLeft(s"$headSymbol $stackframe $headSymbol\\n$typeSignatureIfNeeded")(_ + _) + "\"]"
     dotSuccessors.foldLeft(node)(_ + "\n" + _)
   }
 

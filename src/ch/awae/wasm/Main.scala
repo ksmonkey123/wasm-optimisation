@@ -18,7 +18,7 @@ object Main extends App {
 
   val f = functions apply 10
 
-  val flow = cfg.Builder.build(f, module.types)
+  val flow = cfg.Builder.build(f, module)
 
   flow.prune()
 

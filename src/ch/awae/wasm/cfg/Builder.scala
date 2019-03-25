@@ -1,20 +1,19 @@
 package ch.awae.wasm.cfg
 
-import ch.awae.wasm.ast.Instruction
+import ch.awae.wasm.ast.{Instruction, Module}
 import ch.awae.wasm.ast.Instruction._
-import ch.awae.wasm.ast.Types.FunctionType
 import ch.awae.wasm.ast.WasmFunction.DeclaredFunction
 import ch.awae.wasm.util.{Indexer, SequentialIndexer}
 
 object Builder {
 
 
-  def build(function: DeclaredFunction, typeLookup: Int => FunctionType):ControlFlow = {
-    val flow = new ControlFlow
+  def build(function: DeclaredFunction, module: Module):ControlFlow = {
+    val flow = new ControlFlow(module)
     val frameIndexer = new SequentialIndexer(1)
     // add global return block
     val returnBlock = new SimpleBlock(flow, stackframe = -1)
-    returnBlock.entryType = typeLookup(function.typeIdx).returnType
+    returnBlock.entryType = module.types(function.typeIdx).returnType
     flow += returnBlock
     flow.end = returnBlock.uuid
     // main block
