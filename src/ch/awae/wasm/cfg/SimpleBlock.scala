@@ -27,7 +27,7 @@ class SimpleBlock(
   }
 
   def dot : String = {
-    val node = "\"" + uuid + "\" [shape=box, label=\"" + instructions.map("  " + _.getClass.getSimpleName + "  ").foldLeft(s":: $stackframe ::")(_ + "\\n" + _) + "\"]"
+    val node = "\"" + uuid + "\" [shape=rectangle, fontname=Monospace, label=\"" + instructions.map(" " + AsmPrinter(_) + "        \\l").foldLeft(s"   :: $stackframe ::   \\n")(_ + _) + "\"]"
     dotSuccessors.foldLeft(node)(_ + "\n" + _)
   }
 
