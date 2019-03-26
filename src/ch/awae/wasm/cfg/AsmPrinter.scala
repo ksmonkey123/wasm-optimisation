@@ -2,8 +2,8 @@ package ch.awae.wasm.cfg
 
 import java.util
 
-import ch.awae.wasm.ast.{Instruction, Module}
 import ch.awae.wasm.ast.Instruction._
+import ch.awae.wasm.ast.{Instruction, Module}
 
 object AsmPrinter {
 
@@ -191,12 +191,8 @@ object AsmPrinter {
     case BRANCH_COND(label) => s"0x0d br_if $label"
     case BRANCH_TABLE(table, default) => s"0x0e br_table ${table.foldRight(default.toString)(_+","+_)}"
     case RETURN => "0x0f return"
-    case CALL(funcId) =>
-      val signature = module.types(module.funcs(funcId).typeIdx)
-      s"0x10 call $funcId : " + signature.paramTypes.size+ " => " + signature.returnType.getOrElse("void")
-    case CALL_INDIRECT(typeId) =>
-      val signature = module.types(typeId)
-      s"0x11 call_indirect $typeId : " + signature.paramTypes.size+ " => " + signature.returnType.getOrElse("void")
+    case CALL(funcId) => s"0x10 call $funcId : " + module.types(module.funcs(funcId).typeIdx)
+    case CALL_INDIRECT(typeId) => s"0x11 call_indirect $typeId : " + module.types(typeId)
     case DROP => "0x1a drop"
     case SELECT => "0x1b select"
     case LOCAL_GET(id) => s"0x20 local.get $id"

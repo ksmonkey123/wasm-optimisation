@@ -44,12 +44,19 @@ object Types {
 
   }
 
-  case class FunctionType(paramTypes: List[ValueType], returnType: Option[ValueType])
+  case class FunctionType(paramTypes: List[ValueType], returnType: Option[ValueType]) {
+    override def toString: String = (paramTypes match {
+      case Nil => "() => "
+      case x :: Nil => paramTypes.head.toString + " => "
+      case xs => "(" + xs.map(_.toString).reduce(_ + ", " + _) + ") => "
+    }) + returnType.map(_.toString).getOrElse("void")
+  }
 
   object FunctionType {
     private[ast] def apply(stream: DataStream): FunctionType = stream.take match {
       case 0x60 => FunctionType(Vec(stream, ValueType(_)), Vec(stream, ValueType(_)).headOption)
     }
+
   }
 
   sealed trait Limit
