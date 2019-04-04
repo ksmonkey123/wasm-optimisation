@@ -1,8 +1,8 @@
 package ch.awae.wasm
 
 import ch.awae.wasm.ast.WasmFunction.DeclaredFunction
-import ch.awae.wasm.io.implicits._
 import ch.awae.wasm.ast.implicits._
+import ch.awae.wasm.io.implicits._
 import ch.awae.wasm.util.Dot
 
 object Main extends App {
@@ -18,9 +18,7 @@ object Main extends App {
 
   val f = functions apply 10
 
-  val flow = cfg.Builder.build(f, module)
-
-  flow.prune()
+  val flow = cfg.Builder.build(f, module).pruned()
 
   println(f)
 

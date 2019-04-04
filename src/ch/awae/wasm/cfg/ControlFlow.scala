@@ -26,6 +26,11 @@ class ControlFlow(val module: Module, private[this] var _blocks : ListBuffer[Sim
     mergeIfElseIntoPredecessor()
   }
 
+  def pruned(): ControlFlow = {
+    prune()
+    this
+  }
+
   def removeUnreachableNodes() : Unit = {
     val size = _blocks.size
     val unreachables = _blocks.toList.filterNot(b => _blocks.toList.flatMap(_.successors).distinct.contains(b.uuid) || b.uuid == start)
