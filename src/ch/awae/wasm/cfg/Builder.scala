@@ -1,15 +1,15 @@
 package ch.awae.wasm.cfg
 
-import ch.awae.wasm.ast.{Instruction, Module}
 import ch.awae.wasm.ast.Instruction._
 import ch.awae.wasm.ast.WasmFunction.DeclaredFunction
+import ch.awae.wasm.ast.{Instruction, Module}
 import ch.awae.wasm.util.{Indexer, SequentialIndexer}
 
 object Builder {
 
 
   def build(function: DeclaredFunction, module: Module):ControlFlow = {
-    val flow = new ControlFlow(module)
+    val flow = new ControlFlow(module, module.types(function.typeIdx), function.locals)
     val frameIndexer = new SequentialIndexer(1)
     // add global return block
     val returnBlock = new SimpleBlock(flow, stackframe = -1)
@@ -38,7 +38,7 @@ object Builder {
       case Nil =>
         currentBlock.successors = List(successorBlock.uuid)
       case (x:BlockInstruction) :: xs =>
-        val succ = SimpleBlock(currentBlock.stackframe)
+        val succ = SimpleBlock(currentBlock.stackframe, stackPredecessor = currentBlock.uuid)
         val inner = parseBlock(x, succ, returnBlock, branchTargets, currentBlock.stackframe)
         currentBlock.successors = List(inner.uuid)
         parseInstructions(xs, succ, successorBlock, returnBlock, branchTargets)
@@ -46,23 +46,23 @@ object Builder {
       case RETURN :: xs =>
         currentBlock += RETURN
         currentBlock.successors = List(returnBlock.uuid)
-        parseInstructions(xs, SimpleBlock(currentBlock.stackframe), successorBlock, returnBlock, branchTargets)
+        parseInstructions(xs, SimpleBlock(currentBlock.stackframe, stackPredecessor = currentBlock.uuid), successorBlock, returnBlock, branchTargets)
       case BRANCH(index) :: xs =>
         currentBlock += BRANCH(index)
         currentBlock.successors = List(branchTargets(index).uuid)
-        parseInstructions(xs, SimpleBlock(currentBlock.stackframe), successorBlock, returnBlock, branchTargets)
+        parseInstructions(xs, SimpleBlock(currentBlock.stackframe, stackPredecessor = currentBlock.uuid), successorBlock, returnBlock, branchTargets)
       case BRANCH_COND(index) :: xs =>
         currentBlock += BRANCH_COND(index)
-        val succ = SimpleBlock(currentBlock.stackframe)
+        val succ = SimpleBlock(currentBlock.stackframe, stackPredecessor = currentBlock.uuid)
         currentBlock.successors = List(branchTargets(index).uuid, succ.uuid)
         parseInstructions(xs, succ, successorBlock, returnBlock, branchTargets)
       case BRANCH_TABLE(table, default) :: xs =>
         currentBlock += instructions.head
         currentBlock.successors = (table.map(branchTargets) ::: branchTargets(default) :: Nil).map(_.uuid)
-        parseInstructions(xs, SimpleBlock(currentBlock.stackframe), successorBlock, returnBlock, branchTargets)
+        parseInstructions(xs, SimpleBlock(currentBlock.stackframe, stackPredecessor = currentBlock.uuid), successorBlock, returnBlock, branchTargets)
       case UNREACHABLE :: xs =>
         currentBlock += UNREACHABLE
-        parseInstructions(xs, SimpleBlock(currentBlock.stackframe), successorBlock, returnBlock, branchTargets)
+        parseInstructions(xs, SimpleBlock(currentBlock.stackframe, stackPredecessor = currentBlock.uuid), successorBlock, returnBlock, branchTargets)
       // DEFAULT CASE
       case x :: xs =>
         currentBlock += x

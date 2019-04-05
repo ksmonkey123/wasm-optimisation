@@ -8,13 +8,14 @@ import ch.awae.wasm.ast.Types.ResultType
 import scala.collection.mutable.ListBuffer
 
 class SimpleBlock(
-                 val controlFlow: ControlFlow,
-                 val uuid: UUID = UUID.randomUUID(),
-                 val stackframe : Int,
-                 var entryType : Option[ResultType] = None,
-                 val loopHead: Boolean = false,
-                 private[this] val _instructions : ListBuffer[Instruction] = ListBuffer.empty,
-                 var successors : List[UUID] = Nil) {
+                   val controlFlow: ControlFlow,
+                   val uuid: UUID = UUID.randomUUID(),
+                   val stackframe: Int,
+                   var entryType: Option[ResultType] = None,
+                   val loopHead: Boolean = false,
+                   private[this] val _instructions: ListBuffer[Instruction] = ListBuffer.empty,
+                   var successors: List[UUID] = Nil,
+                   var stackPredecessor: Option[UUID] = None) {
 
   def instructions: List[Instruction] = _instructions.toList
 
@@ -28,6 +29,10 @@ class SimpleBlock(
       case (item, index) => "\"" + uuid + "\" -> \"" + item + "\" [label=" + index + "]"
     }
   }
+
+  def dotStackPredecessors: List[String] = (stackPredecessor map { p =>
+    "\"" + uuid + "\" -> \"" + p + "\" [style=dashed]"
+  }).toList
 
   def typeSignatureIfNeeded:String = {
     if (predecessors.isEmpty) {
@@ -43,7 +48,8 @@ class SimpleBlock(
   def dot : String = {
     val headSymbol = if (loopHead) "##" else "::"
     val node = "\"" + uuid + "\" [shape=rectangle, fontname=Monospace, label=\"" + instructions.map(AsmPrinter(_, controlFlow.module) + "\\l").foldLeft(s"$headSymbol $stackframe $headSymbol\\n$typeSignatureIfNeeded")(_ + _) + "\"]"
-    dotSuccessors.foldLeft(node)(_ + "\n" + _)
+    val n2 = dotSuccessors.foldLeft(node)(_ + "\n" + _)
+    dotStackPredecessors.foldLeft(n2)(_ + "\n" + _)
   }
 
   def predecessors : List[UUID] = for {
@@ -53,11 +59,13 @@ class SimpleBlock(
     block.uuid
   }
 
+  def takesEntryParam: Boolean = !entryType.forall(ResultType.VOID == _)
+
 }
 
 object SimpleBlock {
-  def apply(stackframe : Int, loopHead: Boolean = false)(implicit controlFlow: ControlFlow):SimpleBlock = {
-    val block = new SimpleBlock(controlFlow, stackframe = stackframe, loopHead = loopHead)
+  def apply(stackframe: Int, loopHead: Boolean = false, stackPredecessor: UUID = null)(implicit controlFlow: ControlFlow): SimpleBlock = {
+    val block = new SimpleBlock(controlFlow, stackframe = stackframe, loopHead = loopHead, stackPredecessor = Option(stackPredecessor))
     controlFlow += block
     block
   }

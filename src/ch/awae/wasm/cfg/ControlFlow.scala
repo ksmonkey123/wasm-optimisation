@@ -2,12 +2,17 @@ package ch.awae.wasm.cfg
 
 import java.util.UUID
 
+import ch.awae.wasm.ast.Code.Locals
 import ch.awae.wasm.ast.Instruction.IFELSE
 import ch.awae.wasm.ast.Module
+import ch.awae.wasm.ast.Types.FunctionType
+import org.jgrapht.graph.{DefaultDirectedGraph, DefaultEdge}
+import org.jgrapht.traverse.TopologicalOrderIterator
 
+import scala.collection.JavaConverters.asScalaIteratorConverter
 import scala.collection.mutable.ListBuffer
 
-class ControlFlow(val module: Module, private[this] var _blocks : ListBuffer[SimpleBlock] = ListBuffer.empty) {
+class ControlFlow(val module: Module, val typ: FunctionType, val locals: List[Locals], private[this] var _blocks: ListBuffer[SimpleBlock] = ListBuffer.empty) {
 
   var start : UUID = _
   var end : UUID = _
@@ -81,5 +86,25 @@ class ControlFlow(val module: Module, private[this] var _blocks : ListBuffer[Sim
     predec.successors = block.successors
     _blocks.remove(_blocks.indexOf(block))
   }
+
+  def topologicalSequence: List[UUID] = {
+    val graph = new DefaultDirectedGraph[UUID, DefaultEdge](classOf[DefaultEdge])
+
+    for (block <- this.blocks) {
+      graph addVertex block.uuid
+    }
+
+    for {
+      block <- this.blocks
+      sucor <- block.successors
+      sucBl = this.block(sucor)
+      if !(sucBl.loopHead && sucBl.stackframe <= block.stackframe)
+    } {
+      graph.addEdge(block.uuid, sucor)
+    }
+
+    new TopologicalOrderIterator(graph).asScala.toList
+  }
+
 
 }
