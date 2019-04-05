@@ -13,6 +13,9 @@ class SsaBlock(
                 val inst: ListBuffer[SsaInstruction] = ListBuffer.empty,
                 val rawFlow: ControlFlow
               ) {
+
+  def removePhi(φ: Φ): Unit = inst.remove(inst.indexOf(φ))
+
   def replaceSymbol(original: Int, replacement: Int): Unit = {
     val newInsts = (for {
       instruction <- inst

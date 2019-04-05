@@ -97,7 +97,7 @@ class SsaParser(flow: ControlFlow) {
   def parse(): SsaControlFlow = {
     for (uuid <- flow.topologicalSequence)
       processBlock(uuid)
-    new SsaControlFlow(flow.start, flow.end, ssaBlocks.values.toList)
+    new SsaControlFlow(flow.start, flow.end, ssaBlocks.values.toList, flow)
   }
 
   def processBlock(uuid: UUID): Unit = {

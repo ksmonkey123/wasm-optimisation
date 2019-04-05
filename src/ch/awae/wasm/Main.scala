@@ -17,7 +17,7 @@ object Main extends App {
   // 18 - deep nesting
   // 20 - huuuge
 
-  val f = functions apply 7
+  val f = functions apply 10
 
   val flow = cfg.Builder.build(f, module)
   Dot(flow.dot, "cfg-raw")
