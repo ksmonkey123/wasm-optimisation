@@ -17,20 +17,17 @@ object Main extends App {
   // 18 - deep nesting
   // 20 - huuuge
 
-  val f = functions apply 19
+  val f = functions apply 7
 
   val flow = cfg.Builder.build(f, module)
-  println("cfg created")
-  flow.prune()
-  println("cfg reduced")
-  Dot(flow.dot)
-  println("cfg rendered")
-  val ssa = new SsaParser(flow).parse()
-  println("ssa created")
-  Dot(ssa.dot)
-  ssa.prune()
-  println("ssa reduced")
-  Dot(ssa.dot)
-  println("ssa rendered")
+  Dot(flow.dot, "cfg-raw")
 
+  flow.prune()
+  Dot(flow.dot, "cfg-min")
+
+  val ssa = new SsaParser(flow).parse()
+  Dot(ssa.dot, "ssa-raw")
+
+  ssa.prune()
+  Dot(ssa.dot, "ssa-min")
 }
