@@ -7,6 +7,7 @@ import ch.awae.wasm.ast.WasmFunction.{DeclaredFunction, ImportedFunction}
 import scala.language.postfixOps
 
 case class Module(types: List[FunctionType], funcs: List[WasmFunction], remainder: List[Section]) {
+  def functions = funcs.zipWithIndex.map(_.swap)
   def ast: BinaryModule = {
     val (dataSection, temp) = BinaryModule(this.remainder).selectAll[DataSection]
     val (importSection, remainder) = temp.selectAll[ImportSection]

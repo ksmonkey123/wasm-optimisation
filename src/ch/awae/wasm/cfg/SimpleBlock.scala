@@ -49,7 +49,8 @@ class SimpleBlock(
     val headSymbol = if (loopHead) "##" else "::"
     val node = "\"" + uuid + "\" [shape=rectangle, fontname=Monospace, label=\"" + instructions.map(AsmPrinter(_, controlFlow.module) + "\\l").foldLeft(s"$headSymbol $stackframe $headSymbol\\n$typeSignatureIfNeeded")(_ + _) + "\"]"
     val n2 = dotSuccessors.foldLeft(node)(_ + "\n" + _)
-    dotStackPredecessors.foldLeft(n2)(_ + "\n" + _)
+    //dotStackPredecessors.foldLeft(n2)(_ + "\n" + _)
+    n2
   }
 
   def predecessors : List[UUID] = for {

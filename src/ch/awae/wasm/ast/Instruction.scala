@@ -5,7 +5,9 @@ import ch.awae.wasm.ast.Types.ResultType
 
 import scala.annotation.tailrec
 
-trait Instruction
+trait Instruction {
+  def countInstructions: (Int, Int)
+}
 
 object Instruction {
 
@@ -41,9 +43,13 @@ object Instruction {
     def id: Int
   }
 
-  trait MemoryInstruction extends Instruction
+  trait MemoryInstruction extends Instruction {
+    override def countInstructions: (Int, Int) = (1, 0)
+  }
 
-  trait NumericInstruction extends Instruction
+  trait NumericInstruction extends Instruction {
+    override def countInstructions: (Int, Int) = (1, 0)
+  }
 
   // FACTORY
   private val memarg_instructions: List[Byte] = (0x28 to 0x3e).toList.map(_.toByte)
@@ -101,31 +107,69 @@ object Instruction {
     case x => getInstructionsForBlock(stream, Instruction(x :: stream) :: acc)
   }
 
-  case class BLOCK(blockType: ResultType, instructions: List[Instruction]) extends BlockInstruction
+  case class BLOCK(blockType: ResultType, instructions: List[Instruction]) extends BlockInstruction {
+    override def countInstructions: (Int, Int) = {
+      instructions.map(_.countInstructions).foldLeft((1, 0)) { case ((a, b), (c, d)) =>
+        (a + c, b + d)
+      }
+    }
+  }
 
-  case class LOOP(blockType: ResultType, instructions: List[Instruction]) extends BlockInstruction
+  case class LOOP(blockType: ResultType, instructions: List[Instruction]) extends BlockInstruction {
+    override def countInstructions: (Int, Int) = {
+      instructions.map(_.countInstructions).foldLeft((1, 0)) { case ((a, b), (c, d)) =>
+        (a + c, b + d)
+      }
+    }
+  }
 
-  case class IFELSE(blockType: ResultType, ifBlock: List[Instruction], elseBlock: List[Instruction]) extends BlockInstruction
+  case class IFELSE(blockType: ResultType, ifBlock: List[Instruction], elseBlock: List[Instruction]) extends BlockInstruction {
+    override def countInstructions: (Int, Int) = {
+      (ifBlock ::: elseBlock).map(_.countInstructions).foldLeft((1, 0)) { case ((a, b), (c, d)) =>
+        (a + c, b + d)
+      }
+    }
+  }
 
-  case class BRANCH(label: Int) extends BranchInstruction
+  case class BRANCH(label: Int) extends BranchInstruction {
+    override def countInstructions: (Int, Int) = (1, 0)
+  }
 
-  case class BRANCH_COND(label: Int) extends BranchInstruction
+  case class BRANCH_COND(label: Int) extends BranchInstruction {
+    override def countInstructions: (Int, Int) = (1, 0)
+  }
 
-  case class BRANCH_TABLE(table: List[Int], default: Int) extends BranchInstruction
+  case class BRANCH_TABLE(table: List[Int], default: Int) extends BranchInstruction {
+    override def countInstructions: (Int, Int) = (1, 0)
+  }
 
-  case class CALL(funcId: Int) extends ControlInstruction
+  case class CALL(funcId: Int) extends ControlInstruction {
+    override def countInstructions: (Int, Int) = (1, 0)
+  }
 
-  case class CALL_INDIRECT(typeId: Int) extends ControlInstruction
+  case class CALL_INDIRECT(typeId: Int) extends ControlInstruction {
+    override def countInstructions: (Int, Int) = (1, 0)
+  }
 
-  case class LOCAL_GET(id: Int) extends VariableInstruction(0x20)
+  case class LOCAL_GET(id: Int) extends VariableInstruction(0x20) {
+    override def countInstructions: (Int, Int) = (1, 1)
+  }
 
-  case class LOCAL_SET(id: Int) extends VariableInstruction(0x21)
+  case class LOCAL_SET(id: Int) extends VariableInstruction(0x21) {
+    override def countInstructions: (Int, Int) = (1, 1)
+  }
 
-  case class LOCAL_TEE(id: Int) extends VariableInstruction(0x22)
+  case class LOCAL_TEE(id: Int) extends VariableInstruction(0x22) {
+    override def countInstructions: (Int, Int) = (1, 1)
+  }
 
-  case class GLOBAL_GET(id: Int) extends VariableInstruction(0x23)
+  case class GLOBAL_GET(id: Int) extends VariableInstruction(0x23) {
+    override def countInstructions: (Int, Int) = (1, 0)
+  }
 
-  case class GLOBAL_SET(id: Int) extends VariableInstruction(0x24)
+  case class GLOBAL_SET(id: Int) extends VariableInstruction(0x24) {
+    override def countInstructions: (Int, Int) = (1, 0)
+  }
 
   case class MEMARG_INSTRUCTION(inst: Byte, a: Int, o: Int) extends MemoryInstruction
 
@@ -133,15 +177,25 @@ object Instruction {
 
   case class ARITHMETIC_INSTRUCTION(inst: Byte) extends NumericInstruction
 
-  case object UNREACHABLE extends ControlInstruction
+  case object UNREACHABLE extends ControlInstruction {
+    override def countInstructions: (Int, Int) = (1, 0)
+  }
 
-  case object NOP extends ControlInstruction
+  case object NOP extends ControlInstruction {
+    override def countInstructions: (Int, Int) = (1, 0)
+  }
 
-  case object RETURN extends BranchInstruction
+  case object RETURN extends BranchInstruction {
+    override def countInstructions: (Int, Int) = (1, 0)
+  }
 
-  case object DROP extends ParametricInstruction
+  case object DROP extends ParametricInstruction {
+    override def countInstructions: (Int, Int) = (1, 0)
+  }
 
-  case object SELECT extends ParametricInstruction
+  case object SELECT extends ParametricInstruction {
+    override def countInstructions: (Int, Int) = (1, 0)
+  }
 
   case object MEMORY_SIZE extends MemoryInstruction
 

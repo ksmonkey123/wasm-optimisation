@@ -11,8 +11,9 @@ object Dot {
     writer.write(data)
     writer.flush()
     writer.close()
-    val process = new ProcessBuilder().command("dot", file, "-Tpdf", "-Gdpi=300").redirectOutput(new File(s"$prefix-$file.pdf")).start()
+    val process = new ProcessBuilder().command("dot", file, "-Tpdf", "-Gdpi=300").redirectOutput(new File(s"dot/$prefix-$file.pdf")).start()
     process.waitFor()
+    println("exported " + prefix)
   }
 
 }

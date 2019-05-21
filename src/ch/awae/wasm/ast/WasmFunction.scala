@@ -9,6 +9,12 @@ trait WasmFunction {
 object WasmFunction {
 case class ImportedFunction(typeIdx: Int, mod: String, name: String) extends WasmFunction
 
-case class DeclaredFunction(typeIdx: Int, locals: List[Locals], body: List[Instruction]) extends WasmFunction
+  case class DeclaredFunction(typeIdx: Int, locals: List[Locals], body: List[Instruction]) extends WasmFunction {
+    def countIntructions: (Int, Int) = {
+      body.map(_.countInstructions).foldLeft((0, 0)) {
+        case ((a, b), (x, y)) => (a + x, b + y)
+      }
+    }
+  }
 
 }
