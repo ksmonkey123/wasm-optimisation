@@ -14,5 +14,8 @@ object Main extends App {
   // 21 - slightly less massive
 
   val module = load module "change.wasm"
+  module.module.functions foreach println
+
+  module process 17
 
 }
